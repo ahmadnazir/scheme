@@ -19,7 +19,13 @@ cabal repl
 ## Compile ##
 
 ```
-cabal exec ghc Main # seems like I don't need --make switch
-./Main 'input string'
+	cabal exec ghc Main # seems like I don't need --make switch
+	./Main 'input string'
+```
+
+## Quick compile and Run ##
+
+```
+	cabal exec ghc Main && ./Main `more samples/test.txt`
 ```
 

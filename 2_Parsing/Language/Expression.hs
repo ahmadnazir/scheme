@@ -1,7 +1,6 @@
 module Language.Expression where
 
 import qualified Text.ParserCombinators.Parsec as P hiding (spaces)
-import Control.Monad as M
 import Text.Read (readMaybe)
 
 import Language.Definition 
@@ -25,7 +24,6 @@ escapedChars = do P.char '\\'
                              'n' -> '\n'
                              _   -> x
 
-
 parseBool :: P.Parser LispVal
 parseBool = do
     P.char '#'
@@ -40,23 +38,20 @@ parseString = do
                 return $ String x
 
 -- The true and false checks need to be changed
-parseAtom :: P.Parser LispVal
-parseAtom = do 
-              first <- P.letter P.<|> symbol
-              rest <- P.many (P.letter P.<|> P.digit P.<|> symbol)
-              let atom = first:rest
-              return $ case atom of 
-                         "#t" -> Bool True
-                         "#f" -> Bool False
-                         _    -> Atom atom
+-- parseAtom :: P.Parser LispVal
+-- parseAtom = do
+--               first <- P.letter P.<|> symbol
+--               rest <- P.many (P.letter P.<|> P.digit P.<|> symbol)
+--               let atom = first:rest
+--               return $ case atom of
+--                          "#t" -> Bool True
+--                          "#f" -> Bool False
+--                          _    -> Atom atom
 
 
 
 parseExpr :: P.Parser LispVal
-parseExpr = parseAtom
-         P.<|> parseString
-         P.<|> Number.parse
-         P.<|> parseBool
+parseExpr = (parseString P.<|> Number.parse P.<|> parseBool)
 
 -- @todo: maybe this can go somewhere else
 readExpr :: String -> String
