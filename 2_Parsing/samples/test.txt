@@ -1,7 +1,7 @@
-#\sa
-
-#\space
-
-#b1
-
-"as\"das\"\tdfdaf"
+4+5i
+4/5
+4.5   ;; Float
+#\sa  ;; invalid character name
+#\space ;; valid character name
+#b1 ;; binary number 
+"as\"das\"\tdfdaf" ;; string

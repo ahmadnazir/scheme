@@ -1,12 +1,14 @@
 module Language.Parser.Number where
 
 import qualified Text.ParserCombinators.Parsec as P
--- import Control.Monad as M
 import Language.Definition
 import qualified Language.Number as N
+import qualified Numeric
+import qualified Data.Ratio as Ratio
+import qualified Data.Complex as C
 
 parse :: P.Parser LispVal
-parse = decimal1 P.<|> (P.char '#' >> (decimal2 P.<|> hex P.<|> oct P.<|> bin))
+parse = P.try complex P.<|> P.try rational P.<|> P.try float P.<|> decimal1 P.<|> (P.char '#' >> (decimal2 P.<|> hex P.<|> oct P.<|> bin))
 -- simple implementation
 -- parse = M.liftM (Number . read) $ P.many1 P.digit
 --
@@ -45,3 +47,23 @@ bin :: P.Parser LispVal
 bin = do P.string "b"
          x <- P.many1 (P.oneOf "10")
          return $ Number (N.bin2dec x)
+
+-- @todo: add support for precision
+float :: P.Parser LispVal
+float = do x <- P.many1 P.digit
+           P.char '.'
+           y <- P.many1 P.digit
+           return $ Float (fst . head $ Numeric.readFloat ( x ++ "." ++ y ) )
+
+rational :: P.Parser LispVal
+rational = do x <- P.many1 P.digit
+              P.char '/'
+              y <- P.many1 P.digit
+              return $ Ratio ((read x) Ratio.% (read y))
+
+complex :: P.Parser LispVal
+complex = do x <- (P.try float P.<|> decimal1)
+             P.char '+' 
+             y <- (P.try float P.<|> decimal1)
+             P.char 'i' 
+             return $ Complex (N.toDouble x C.:+ N.toDouble y)
