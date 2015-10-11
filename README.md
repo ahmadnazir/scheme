@@ -26,6 +26,6 @@ cabal repl
 ## Quick compile and Run ##
 
 ```
-	cabal exec ghc Main && ./Main `more samples/test.txt`
+	cabal exec ghc Main && ./Main "`more samples/test.txt`"
 ```
 
