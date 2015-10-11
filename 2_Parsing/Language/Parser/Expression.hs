@@ -1,6 +1,8 @@
 module Language.Parser.Expression where
 
 import qualified Text.ParserCombinators.Parsec as P hiding (spaces)
+import Control.Monad as M
+
 import Text.Read (readMaybe)
 
 import Language.Definition 
@@ -63,13 +65,31 @@ string = do
 --                          "#f" -> Bool False
 --                          _    -> Atom atom
 
--- List
--- list :: Parser LispVal
--- list = liftM List $ sepBy parseExpr spaces
+list :: P.Parser LispVal
+list = M.liftM List $ P.sepBy expression spaces
 
+dottedList :: P.Parser LispVal
+dottedList = do
+  head <- P.endBy expression spaces
+  tail <- P.char '.' >> spaces >> expression
+  return $ DottedList head tail
+
+quoted :: P.Parser LispVal
+quoted = do
+    P.char '\''
+    x <- expression
+    return $ List [Atom "quote", x]
 
 -- @fixme: get rid of try
 expression :: P.Parser LispVal
-expression = (string P.<|> P.try Number.parse P.<|> P.try bool P.<|> char)
+expression = P.try string
+  P.<|> P.try Number.parse
+  P.<|> P.try bool
+  P.<|> P.try char
+  P.<|> P.try quoted
+  P.<|> do P.string "("
+           x <- P.try list P.<|> P.try dottedList
+           P.string ")"
+           return x
 
 
