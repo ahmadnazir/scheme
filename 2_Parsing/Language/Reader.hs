@@ -3,7 +3,6 @@ module Language.Reader where
 import qualified Text.ParserCombinators.Parsec as P hiding (spaces)
 
 import qualified Language.Parser.Expression as EP
-import qualified Language.Parser.List as EL
 
 import qualified Text.ParserCombinators.Parsec as P
 

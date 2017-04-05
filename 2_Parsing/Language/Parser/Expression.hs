@@ -87,9 +87,23 @@ expression = P.try string
   P.<|> P.try bool
   P.<|> P.try char
   P.<|> P.try quoted
+  P.<|> P.try quasiQuote
+  P.<|> P.try unquote
   P.<|> do P.string "("
            x <- P.try list P.<|> P.try dottedList
            P.string ")"
            return x
 
+quasiQuote :: P.Parser LispVal
+quasiQuote =
+  do
+    P.char '`'
+    x <- expression
+    return $ List [Atom "quasiquote", x]
 
+unquote :: P.Parser LispVal
+unquote =
+  do
+    P.char ','
+    x <- expression
+    return $ List [Atom "unquote", x]

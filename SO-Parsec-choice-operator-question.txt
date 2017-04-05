@@ -1,0 +1,75 @@
+http://stackoverflow.com/questions/33057481/why-does-it-seem-that-the-parsec-choice-operator-depends-on-order-of-the-parsers
+
+I am trying to parse a very simple language that consists of only decimal or binary numbers. For example, here are some valid inputs:
+
+    #b1
+    #d1
+    #b0101
+    #d1234
+
+I am having a problem using Parsec's choice operator: `<|>`. According to the tutorial: [Write yourself a Scheme in 48 hours][tutorial]:
+
+> [The choice operator] tries the first parser, then if it fails, tries the second. If either succeeds, then it returns the value returned by that parser..
+
+But in my experience, I see that the order of the parsers supplied matters. Here is my program:
+
+    import System.Environment
+    import Text.ParserCombinators.Parsec
+    
+    main :: IO ()
+    main = do
+      (x:_) <- getArgs 
+      putStrLn ( "Hello, " ++ readExp x)
+    
+    bin :: Parser String
+    bin = do string "#b"
+             x <- many( oneOf "01")
+             return x
+    
+    dec :: Parser String
+    dec = do string "#d"
+             x <- many( oneOf "0123456789")
+             return x
+    
+    -- Why does order matter here?
+    parseExp = (bin <|> dec) 
+    
+    readExp :: String -> String
+    readExp input = case parse parseExp "test" input of
+                          Left error -> "Error: " ++ show error
+                          Right val  -> "Found val" ++ show val 
+
+
+Here is how I am running the program:
+
+# Installing dependencies
+
+    $ cabal sandbox init
+    $ cabal install parsec
+
+# Compiling
+
+    $ cabal exec ghc Main
+
+# Run
+
+    $ ./Main "#d1"
+    Hello, Error: "test" (line 1, column 1):
+    unexpected "d"
+    expecting "#b"
+    
+    $ ./Main "#b1"
+    Hello, Found val"1"
+
+If I change the order of the parsers as follows:
+
+    parseExp = (dec <|> bin) 
+
+then only binary numbers are detected and the program fails to identify the decimal numbers.
+
+With the tests that I have performed, I see this problem only happens when one of the parsers has started parsing an input e.g. if a hash character `#` is found, the bin parser is activated ending up in failing as the next character expected is `b` and not `d`. It seems like there should be some kind of backtracking that should happen, which I am not aware of.
+
+Appreciate the help!
+
+[tutorial]: https://en.wikibooks.org/wiki/Write_Yourself_a_Scheme_in_48_Hours/Parsing
+
